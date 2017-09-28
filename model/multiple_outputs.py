@@ -1,6 +1,6 @@
-from operator import itemgetter
-
 import pandas as pd
+
+from operator import itemgetter
 from funcy.seqs import chunks
 from sklearn.base import BaseEstimator, ClassifierMixin
 
@@ -39,3 +39,4 @@ class MultipleOutputClassifier(BaseEstimator, ClassifierMixin):
             probs_df = pd.DataFrame(self.base_estimator.predict_proba(X_ch), columns=self.base_estimator.classes_)
             for probs in probs_df.T.to_dict().values():
                 yield probs
+
