@@ -2,22 +2,42 @@ import pandas as pd
 
 from operator import itemgetter
 from funcy.seqs import chunks
-from sklearn.base import BaseEstimator, ClassifierMixin
+from sklearn.base import BaseEstimator
+from model.data import DataHandler
+
+from sklearn.feature_extraction.text import CountVectorizer
 
 
-class MultipleOutputClassifier(BaseEstimator, ClassifierMixin):
+class MultipleVectorizer(CountVectorizer):
+
+    def __init__(self, *args, **kwargs):
+        super(MultipleVectorizer, self).__init__()
+        print('here init')
+
+
+    def fit(self, X, y = None):
+        X_flat, y_flat = DataHandler.flatten_data(X, y)
+        res =  super(MultipleVectorizer, self).fit(X, y)
+        # print('here2')
+        return res
+
+
+class MultipleOutputClassifier(BaseEstimator):
     def __init__(self, base_estimator, threshold=0.3):
         self.base_estimator = base_estimator
         self.threshold = threshold
 
     def fit(self, X, y=None, sample_weight=None):
+        # X, y = DataHandler.flatten_data(X, y)
+        # print(len(X), len(y))
+        # print(len(X), len(y))
         self.base_estimator.fit(X, y, sample_weight)
         return self
 
     def predict(self, X):
-        return self.predict_many(X)
+        return self.predict_multiple(X)
 
-    def predict_many(self, X):
+    def predict_multiple(self, X):
         # predicts all the classes with probability >= threshold
         # and the most probable category
         return [self.extract_classes(probs_dict) for probs_dict in self.predict_proba_dict(X)]
@@ -27,9 +47,6 @@ class MultipleOutputClassifier(BaseEstimator, ClassifierMixin):
         probs_sorted = sorted(probs_dict.items(), key=itemgetter(1), reverse=True)
         return [cl for i, (cl, probability) in enumerate(probs_sorted)
                 if i == 0 or probability >= self.threshold]
-
-    def predict_proba(self, X):
-        return self.base_estimator.predict_proba(X)
 
     def predict_proba_dict(self, X):
         # predicts a list of dictionaries
