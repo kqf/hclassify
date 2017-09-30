@@ -6,7 +6,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.pipeline import make_pipeline, Pipeline
 
 from model.data import DataHandler
-from model.multiple_outputs import MultipleOutputClassifier, MultipleVectorizer
+from model.multiple_outputs import MultipleOutputClassifier
 
 
 def model_definition_words(threshold=0.05):
@@ -21,10 +21,10 @@ def model_definition_words(threshold=0.05):
 
 def validate_model(X, y):
     X_tr, X_te, y_tr, y_te = train_test_split(X, y, random_state=1)
-    X_tr, y_tr = DataHandler.flatten_data(X_tr, y_tr)
+    X_trf, y_trf = DataHandler.flatten_data(X_tr, y_tr)
 
     est = model_definition_words(0.05)
-    est.fit(X_tr, y_tr)
+    est.fit(X_trf, y_trf)
 
     best_thres = 0
     best_mean_f1 = 0

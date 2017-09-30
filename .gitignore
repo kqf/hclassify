@@ -3,3 +3,11 @@ __pycache__/*
 *.ipynb
 *.pyc
 *.png
+activate/
+bin/
+include/
+lib/
+lib64
+pip-selfcheck.json
+*.sublime-*
+*-config.json

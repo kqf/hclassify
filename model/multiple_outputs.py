@@ -6,21 +6,7 @@ from sklearn.base import BaseEstimator
 from model.data import DataHandler
 
 from sklearn.feature_extraction.text import CountVectorizer
-
-
-class MultipleVectorizer(CountVectorizer):
-
-    def __init__(self, *args, **kwargs):
-        super(MultipleVectorizer, self).__init__()
-        print('here init')
-
-
-    def fit(self, X, y = None):
-        X_flat, y_flat = DataHandler.flatten_data(X, y)
-        res =  super(MultipleVectorizer, self).fit(X, y)
-        # print('here2')
-        return res
-
+from sklearn.base import BaseEstimator, TransformerMixin
 
 class MultipleOutputClassifier(BaseEstimator):
     def __init__(self, base_estimator, threshold=0.3):
@@ -28,9 +14,6 @@ class MultipleOutputClassifier(BaseEstimator):
         self.threshold = threshold
 
     def fit(self, X, y=None, sample_weight=None):
-        # X, y = DataHandler.flatten_data(X, y)
-        # print(len(X), len(y))
-        # print(len(X), len(y))
         self.base_estimator.fit(X, y, sample_weight)
         return self
 

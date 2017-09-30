@@ -8,8 +8,9 @@ class DataHandler:
     def load_data(klass, datafile='data/categories.csv' ,catfile='data/category_mapping.csv'):
         df = pd.read_csv(datafile)
         df = klass.clean(df)
-        # df = klass.popular(df)
-        return klass.useful_features(df, catfile)
+        df = klass.popular(df)
+        cat_map = klass.cat_mapping(catfile)
+        return klass.useful_features(df, cat_map)
 
     @classmethod
     def clean(klass, df):
@@ -31,9 +32,12 @@ class DataHandler:
         return df
 
     @classmethod
-    def useful_features(klass, df, catfile):
+    def cat_mapping(klass, catfile):
         df_category_mapping = pd.read_csv(catfile, sep='\t')
-        category_mapping = dict(zip(df_category_mapping.raw, df_category_mapping.mapped)) 
+        return  dict(zip(df_category_mapping.raw, df_category_mapping.mapped)) 
+
+    @classmethod
+    def useful_features(klass, df, category_mapping):
         descriptions = df['short_description']
         categories = df['categories'].map(lambda x: [category_mapping[c] for c in x])
         return descriptions.values, categories.values
@@ -47,4 +51,15 @@ class DataHandler:
                 X_flat.append(x)
                 y_flat.append(y)
         return X_flat, y_flat
+
+
+class DataHandlerSingle(DataHandler):
+    def __init__(self):
+        super(DataHandlerSingle, self).__init__()
+
+    def useful_features(df, category_mapping):
+        descriptions = df['short_description']
+        categories = df['most_popular_category'].map(lambda x: category_mapping[x])
+        return descriptions.values, categories.values
+
 
