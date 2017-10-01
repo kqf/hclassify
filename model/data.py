@@ -1,16 +1,17 @@
 import numpy as np
 import pandas as pd
 from sklearn.feature_extraction import DictVectorizer
+from collections import Counter
 
 class DataHandler:
 
     @classmethod
-    def load_data(klass, datafile='data/categories.csv' ,catfile='data/category_mapping.csv'):
+    def load_data(klass, datafile='data/categories.csv' ,catfile='data/category_mapping.csv', threshold = 500):
         df = pd.read_csv(datafile)
         df = klass.clean(df)
-        df = klass.popular(df)
-        cat_map = klass.cat_mapping(catfile)
-        return klass.useful_features(df, cat_map)
+        df = klass.categories(df, catfile)
+        df = klass.popular(df, threshold)
+        return klass.useful_features(df)
 
     @classmethod
     def clean(klass, df):
@@ -20,27 +21,31 @@ class DataHandler:
         return df
 
     @classmethod
-    def popular(klass, df):
-        category_dict = [{cat: 1 for cat in cats} for cats in list(df.categories)]
-        encoder = DictVectorizer()
-        encoder.fit(category_dict)
-        categories_mat = encoder.transform(category_dict)
-        categories_counts = np.asarray(categories_mat.sum(0).reshape(-1), dtype=np.int)[0]
-        categories_dist = dict(zip(encoder.feature_names_, categories_counts))
-        df['most_popular_category'] = df.categories.map(
-            lambda x: sorted(x, key=lambda x: categories_dist[x], reverse=True)[0])
+    def categories(klass, df, catfile):
+        df_category_mapping = pd.read_csv(catfile, sep='\t')
+        category_mapping = dict(zip(df_category_mapping.raw, df_category_mapping.mapped))
+        df['categories'] = df['categories'].map(lambda x: [category_mapping[c] for c in x])
         return df
 
     @classmethod
-    def cat_mapping(klass, catfile):
-        df_category_mapping = pd.read_csv(catfile, sep='\t')
-        return  dict(zip(df_category_mapping.raw, df_category_mapping.mapped)) 
+    def popular(klass, df, threshold):
+        categories = []
+        for x in list(df.categories):
+            for c in set(x):
+                categories.append(c)
+        categories_dist = Counter(categories)
+
+        def most_popular(x):
+            max_cat = sorted(x, key=lambda y: categories_dist[y], reverse=True)[0]
+            return max_cat
+        
+        df['most_popular_category'] = df.categories.map(most_popular)
+        return df
 
     @classmethod
-    def useful_features(klass, df, category_mapping):
+    def useful_features(klass, df):
         descriptions = df['short_description']
-        categories = df['categories'].map(lambda x: [category_mapping[c] for c in x])
-        return descriptions.values, categories.values
+        return descriptions.values, df.categories.values
 
     @staticmethod
     def flatten_data(X, Y):
@@ -57,9 +62,16 @@ class DataHandlerSingle(DataHandler):
     def __init__(self):
         super(DataHandlerSingle, self).__init__()
 
-    def useful_features(df, category_mapping):
+    @classmethod
+    def popular(klass, df, threshold):
+        df = super(DataHandlerSingle, klass).popular(df, threshold)
+        categories_dist = Counter(df.most_popular_category)
+        df.most_popular_category = df.most_popular_category.map(lambda x: x if categories_dist[x] > threshold else np.nan)
+        df = df.dropna()
+        return df
+
+    def useful_features(df):
         descriptions = df['short_description']
-        categories = df['most_popular_category'].map(lambda x: category_mapping[x])
-        return descriptions.values, categories.values
+        return descriptions.values, df.most_popular_category.values
 
 
