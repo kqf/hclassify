@@ -7,9 +7,12 @@ from sklearn.model_selection import StratifiedShuffleSplit, KFold
 from sklearn.model_selection import GridSearchCV
 
 from sklearn import metrics
+from sklearn.multiclass import OneVsRestClassifier
+from sklearn.preprocessing import MultiLabelBinarizer
 
 
 class TrainingBundle():
+    ofile_extension = '-single.pkl'
     def __init__(self, name, algorithm, grid_pars, nfolds, n_jobs = 40):
         self.name = name
         self.algorithm = algorithm
@@ -23,9 +26,16 @@ class TrainingBundle():
             TfidfTransformer(),
             self.algorithm,
         )
+        # print ('>>>>', est.get_params(False))
         return est
 
+    def transform_labels(self, y):
+        return y
+
     def train_model(self, X, y):
+        # Transform labels if needed
+        y = self.transform_labels(y)
+
         X_tr, X_te, y_tr, y_te = train_test_split(X, y)
         cv_strategy = StratifiedShuffleSplit(n_splits = self.nfolds, test_size = 0.3)
         # cv_strategy = KFold(3)
@@ -48,8 +58,22 @@ class TrainingBundle():
         print()
         print('Best Parameters', search.best_params_)
         print('Best estimator', search.best_estimator_)
-        joblib.dump(search, self.name + '-single.pkl', compress = 1)
+        joblib.dump(search, self.name + self.ofile_extension, compress = 1)
 
     # TODO: Finish this
     def restore_from_file(self):
         pass
+
+
+class MultiLabelTrainingBundle(TrainingBundle):
+
+    ofile_extension = '-multiple.pkl'
+    def __init__(self, name, algorithm, grid_pars, nfolds, n_jobs = 40):
+        super(MultiLabelTrainingBundle, self).__init__(
+            name, None, grid_pars, nfolds, n_jobs)
+        self.algorithm = OneVsRestClassifier(algorithm)
+        
+
+    def transform_labels(self, y):
+        mlb = MultiLabelBinarizer()
+        return mlb.fit_transform(y)

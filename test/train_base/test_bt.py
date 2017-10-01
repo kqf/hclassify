@@ -13,8 +13,8 @@ class TestBT(unittest.TestCase):
         alg = GradientBoostingClassifier(n_estimators=100, learning_rate=1.0, min_samples_split = 20)
 
         params = {
-                'gradientboostingclassifier__min_samples_split': [5, 10, 50, 100, 200], 
-                'countvectorizer__ngram_range': [(2, 3)]
+                'gradientboostingclassifier__min_samples_split': [20], 
+                'countvectorizer__ngram_range': [(1, 3)]
         }
         self.bundle = TrainingBundle('bt', alg, params, nfolds = 3, n_jobs = 40)
 
