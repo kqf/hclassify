@@ -75,3 +75,17 @@ class DataHandlerSingle(DataHandler):
         return descriptions.values, df.most_popular_category.values
 
 
+class DataHandlerStrickt(DataHandler):
+    def __init__(self):
+        super(DataHandlerStrickt, self).__init__()
+
+    @classmethod
+    def popular(klass, df, threshold):
+        df = super(DataHandlerStrickt, klass).popular(df, threshold)
+        df = super(DataHandlerStrickt, klass).popular(df, threshold)
+        df['set_categories'] = df.categories.map(lambda x : ' '.join(sorted(x)))
+        categories_dist      = Counter(df.set_categories)
+        df.set_categories    = df.set_categories.map(lambda x: x if categories_dist[x] > 100 else np.nan)
+        df = df.dropna()
+        return df
+

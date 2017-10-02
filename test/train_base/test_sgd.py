@@ -9,12 +9,13 @@ import numpy as np
 class TestSGD(unittest.TestCase):
 
     def setUp(self):
-        alg = SGDClassifier(loss='squared_hinge', alpha=0.0001, max_iter=60, penalty = 'l2', tol=None)
+        alg = SGDClassifier(loss='squared_hinge', alpha=0.0001, max_iter=5, penalty = 'l2', tol=None)
 
         params = {
+                # 'sgdclassifier__alpha': np.linspace(1e-6, 1e-2, 10),
                 'countvectorizer__ngram_range': [(1, 3)],
-                'countvectorizer__max_features': [50000, 200000, 100000, 200000, 300000],
-                'countvectorizer__min_df': [0.00001, 0.0005]
+                'countvectorizer__max_features': [200000],
+                'countvectorizer__min_df': [0.00001,]
         }
         self.bundle = TrainingBundle('sgd', alg, params, nfolds = 3, n_jobs = 40)
 

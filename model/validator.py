@@ -19,11 +19,11 @@ def model_definition_words(threshold=0.05):
     )
     return est
 
-def validate_model(X, y):
+def validate_model(X, y, pipeline_executable = model_definition_words):
     X_tr, X_te, y_tr, y_te = train_test_split(X, y, random_state=1)
     X_trf, y_trf = DataHandler.flatten_data(X_tr, y_tr)
 
-    est = model_definition_words(0.05)
+    est = pipeline_executable(0.05)
     est.fit(X_trf, y_trf)
 
     best_thres = 0
@@ -33,7 +33,11 @@ def validate_model(X, y):
     for thres in [0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09, 0.10]:
         est.steps[-1][1].threshold = thres
         preds = est.predict(X_te)
-        mean_f1 = np.array([f1(true, pred) for true, pred in zip(y_te, preds)]).mean()
+        mean_f1 = f1_mean(y_te, preds) 
+        
+        for yy, pp in zip(y_te[0:10], preds[0:10]):
+            print ('test', yy, 'predicted', pp)
+
         all_f1.append(mean_f1)
         if mean_f1 > best_mean_f1:
             best_thres = thres
@@ -43,6 +47,11 @@ def validate_model(X, y):
     print('Best F1 {}'.format(best_mean_f1))
     # return best_thres
     return all_f1
+
+
+def f1_mean(y_te, preds):
+    f1_scores = np.array([f1(true, pred) for true, pred in zip(y_te, preds)]).mean()
+    return f1_scores.mean()
 
 
 def f1(true, pred):
@@ -55,5 +64,3 @@ def f1(true, pred):
     if (precision + recall) == 0:
         return 0
     return (2 * precision * recall / (precision + recall))
-
-

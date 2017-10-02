@@ -12,7 +12,7 @@ class TestThresholds(unittest.TestCase):
 
 
     def test_reproduces_initial_results(self):
-        X, y = DataHandler.load_data()
+        X, y = DataHandler.load_data(threshold = 0)
         f1 = validate_model(X[::100], y[::100])
 
         for f, nominal in zip(f1, self.nominal):
