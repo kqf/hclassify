@@ -9,16 +9,14 @@ import numpy as np
 class TestSGD(unittest.TestCase):
 
     def setUp(self):
-        alg = SGDClassifier(loss='squared_hinge', alpha=1e-3, max_iter=50, tol=None)
+        alg = SGDClassifier(loss='squared_hinge', alpha=0.0001, max_iter=60, penalty = 'l2', tol=None)
 
         params = {
-                'onevsrestclassifier__estimator__loss': ['squared_hinge'],
-                'onevsrestclassifier__estimator__max_iter': [50],
-                'onevsrestclassifier__estimator__alpha': (0.0001),
-                'onevsrestclassifier__estimator__penalty': ('l2'), 
-                'countvectorizer__ngram_range': [(1, 3)]
+                'countvectorizer__ngram_range': [(1, 3)],
+                'countvectorizer__max_features': [50000, 200000, 100000, 200000, 300000],
+                'countvectorizer__min_df': [0.00001, 0.0005]
         }
-        self.bundle = TrainingBundle('sgd', alg, params, nfolds = 2, n_jobs = 40)
+        self.bundle = TrainingBundle('sgd', alg, params, nfolds = 3, n_jobs = 40)
 
 
     def test_reproduces_initial_results(self):

@@ -10,6 +10,8 @@ from sklearn import metrics
 from sklearn.multiclass import OneVsRestClassifier
 from sklearn.preprocessing import MultiLabelBinarizer
 
+from sklearn.metrics import f1_score, make_scorer
+
 
 class TrainingBundle():
     ofile_extension = '-single.pkl'
@@ -23,10 +25,10 @@ class TrainingBundle():
     def pipeline(self):
         est = make_pipeline(
             CountVectorizer(binary=False, analyzer='word', stop_words='english'),
-            TfidfTransformer(),
+            TfidfTransformer(norm = 'l2', smooth_idf = True, use_idf = True),
             self.algorithm,
         )
-        # print ('>>>>', est.get_params(False))
+        # print ('>>>>', est.get_params().keys())
         return est
 
     def transform_labels(self, y):
@@ -41,7 +43,8 @@ class TrainingBundle():
         # cv_strategy = KFold(3)
 
         estimator = self.pipeline()
-        search = GridSearchCV(estimator, self.grid_pars, cv = cv_strategy, verbose = 10, n_jobs = self.n_jobs)
+        scorer = make_scorer(f1_score, average = 'micro')
+        search = GridSearchCV(estimator, self.grid_pars, cv = cv_strategy, verbose = 10, n_jobs = self.n_jobs, scoring = scorer)
         search.fit(X_tr, y_tr)
 
         est = search.best_estimator_
