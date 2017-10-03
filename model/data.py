@@ -6,10 +6,14 @@ from collections import Counter
 class DataHandler:
 
     @classmethod
-    def load_data(klass, datafile='data/categories.csv' ,catfile='data/category_mapping.csv', threshold = 500):
+    def load_data(klass, datafile='data/categories.csv', 
+                        catfile='data/category_mapping.csv', 
+                        exfile = 'data/exclude_tags.csv', 
+                        threshold = 500):
+
         df = pd.read_csv(datafile)
         df = klass.clean(df)
-        df = klass.categories(df, catfile)
+        df = klass.categories(df, catfile, exfile)
         df = klass.popular(df, threshold)
         return klass.useful_features(df)
 
@@ -17,14 +21,18 @@ class DataHandler:
     def clean(klass, df):
         df = df.assign(categories=lambda x: x.categories.map(eval))
         df = df.dropna()
-        df = df.loc[lambda x: x.categories.map(len) > 0]
         return df
 
     @classmethod
-    def categories(klass, df, catfile):
+    def categories(klass, df, catfile, exfile):
         df_category_mapping = pd.read_csv(catfile, sep='\t')
         category_mapping = dict(zip(df_category_mapping.raw, df_category_mapping.mapped))
-        df['categories'] = df['categories'].map(lambda x: [category_mapping[c] for c in x])
+
+        noisy = [] if not exfile else pd.read_csv(exfile)['noisy'].values
+        tr_noise = lambda x: [category_mapping[c] for c in x if category_mapping[c] not in noisy]
+
+        df['categories'] = df['categories'].map(tr_noise)
+        df = df.loc[lambda x: x.categories.map(len) > 0]
         return df
 
     @classmethod
@@ -80,12 +88,11 @@ class DataHandlerStrickt(DataHandler):
         super(DataHandlerStrickt, self).__init__()
 
     @classmethod
-    def popular(klass, df, threshold):
-        df = super(DataHandlerStrickt, klass).popular(df, threshold)
+    def popular(klass, df, threshold = 0):
         df = super(DataHandlerStrickt, klass).popular(df, threshold)
         df['set_categories'] = df.categories.map(lambda x : ' '.join(sorted(x)))
         categories_dist      = Counter(df.set_categories)
-        df.set_categories    = df.set_categories.map(lambda x: x if categories_dist[x] > 100 else np.nan)
+        df.set_categories    = df.set_categories.map(lambda x: x if categories_dist[x] > threshold else np.nan)
         df = df.dropna()
         return df
 

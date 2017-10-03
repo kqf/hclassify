@@ -1,10 +1,11 @@
 from model.validator import validate_model
 from model.data import DataHandler as dhlr
+from model.data import DataHandlerStrickt as dhlr
 
 
 def run_original():
     print('Loading data ...')
-    X, y = dhlr.load_data(threshold = 0)
+    X, y = dhlr.load_data(threshold = 10)
 
     print('Loaded {0} objects'.format(len(y)))
     best_thres = validate_model(X, y)
@@ -28,7 +29,7 @@ def run_hybrid():
         return est
 
     print('Loading data ...')
-    X, y = dhlr.load_data(threshold = 500)
+    X, y = dhlr.load_data(threshold = 10)
 
     print('Loaded {0} objects'.format(len(y)))
     best_thres = validate_model(X, y, pipeline)
@@ -37,8 +38,8 @@ def run_hybrid():
 
 
 def main():
-    # print('Running original solution')
-    # run_original()
+    print('Running original solution')
+    run_original()
 
     print('Running hybrid solution')
     run_hybrid()

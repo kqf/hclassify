@@ -31,10 +31,10 @@ class TrainingBundle():
             TfidfTransformer(norm = 'l2', smooth_idf = True, use_idf = True),
             self.algorithm,
         )
-        # print ('>>>>', est.get_params().keys())
         return est
 
     def train_model(self, X, y):
+        # X_tr, X_te, y_tr, y_te = train_test_split(X, y, stratify = y)
         X_tr, X_te, y_tr, y_te = train_test_split(X, y)
         cv_strategy = StratifiedShuffleSplit(n_splits = self.nfolds, test_size = 0.3)
         # cv_strategy = KFold(3)
