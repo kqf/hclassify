@@ -52,7 +52,7 @@ def factor_all(data, words):
 class TestLabels(unittest.TestCase):
 
 
-    @unittest.skip('not useful')
+    # @unittest.skip('not useful')
     def test_data(self):
         _, y = DataHandler.load_data(threshold = 0)
 
@@ -65,7 +65,6 @@ class TestLabels(unittest.TestCase):
 
 
     def less_important(self):
-
         with open('categories-labels.pkl', 'rb') as handle:
             data = pickle.load(handle)
 

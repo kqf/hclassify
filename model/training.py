@@ -11,9 +11,7 @@ from sklearn.multiclass import OneVsRestClassifier
 from sklearn.preprocessing import MultiLabelBinarizer
 
 from sklearn.metrics import f1_score, make_scorer
-
 from model.validator import f1_mean
-
 
 class TrainingBundle():
     ofile_extension = '-single.pkl'
@@ -27,7 +25,7 @@ class TrainingBundle():
         
     def pipeline(self, threshold = None):
         est = make_pipeline(
-            CountVectorizer(binary=False, analyzer='word', stop_words='english'),
+            CountVectorizer(binary=False, analyzer='word', stop_words='english', max_features = 200000, min_df = 0.00001, ngram_range = (1, 3)),
             TfidfTransformer(norm = 'l2', smooth_idf = True, use_idf = True),
             self.algorithm,
         )
@@ -50,15 +48,12 @@ class TrainingBundle():
         print()
         print()
         print('Best Parameters', search.best_params_)
-        print('Best estimator', search.best_estimator_)
 
         joblib.dump(search, self.name + self.ofile_extension, compress = 1)
         self.show_quality(search, y_tr, train_predictions, y_te, test_predictions)
 
     def show_quality(self, search, y_tr, train_predictions, y_te, test_predictions):
         print('On test sample accuracy:', metrics.accuracy_score(y_te, test_predictions))
-        print()
-        print()
         print('On training sample accuracy:', metrics.accuracy_score(y_tr, train_predictions))
         # print(metrics.classification_report(y_tr, train_predictions, y_tr))
 
@@ -90,15 +85,12 @@ class MultiLabelTrainingBundle(TrainingBundle):
     def show_quality(self, search, y_tr, train_predictions, y_te, test_predictions):
         print('On test sample accuracy:', metrics.f1_score(y_te, test_predictions, average = 'micro'))
         print()
-        print()
         print('On training sample accuracy:', metrics.f1_score(y_tr, train_predictions, average = 'micro'))
         # print(metrics.classification_report(y_tr, train_predictions, y_tr))
 
-        print()
         print()
         y_te, test_predictions = self.mlb.inverse_transform(y_te), self.mlb.inverse_transform(test_predictions)
         print('Using custom F1 measure', f1_mean(y_te, test_predictions))
 
         for true, test in zip(y_te[0:10], test_predictions[0:10]):
             print('True {0} predicted {1}'.format(true, test))
-

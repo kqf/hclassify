@@ -10,10 +10,10 @@ import numpy as np
 class TestSGD(unittest.TestCase):
 
     def setUp(self):
-        alg = SGDClassifier(loss='squared_hinge', alpha = 0.0001, max_iter=5, tol=None, penalty = 'l2')
+        alg = SGDClassifier(loss='squared_hinge', alpha = 1e-5, max_iter=325, tol=None, penalty = 'l2')
         params = {
-                'onevsrestclassifier__estimator__alpha': [0.00001, 0.0001],
-                'onevsrestclassifier__estimator__max_iter': [300, 350],
+                'onevsrestclassifier__estimator__learning_rate': ['optimal', 'invscaling'],
+                'onevsrestclassifier__estimator__max_iter': [325],
                 'onevsrestclassifier__n_jobs': [40],
                 'countvectorizer__ngram_range': [(1, 3)]
                 # 'countvectorizer__max_features': [1000, 10000, 100000, 200000],
