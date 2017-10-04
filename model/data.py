@@ -73,7 +73,12 @@ class DataHandlerSingle(DataHandler):
     @classmethod
     def popular(klass, df, threshold):
         df = super(DataHandlerSingle, klass).popular(df, threshold)
+        # Binned data approach
+        #
+        
+        df['most_popular_category'] = df.categories.map(lambda x : ' '.join(sorted(x)))
         categories_dist = Counter(df.most_popular_category)
+        # print(len(categories_dist))
         df.most_popular_category = df.most_popular_category.map(lambda x: x if categories_dist[x] > threshold else np.nan)
         df = df.dropna()
         return df

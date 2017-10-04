@@ -24,7 +24,7 @@ def run_hybrid():
             CountVectorizer(binary=False, analyzer='word', stop_words='english', max_features = 200000, min_df = 0.00001, ngram_range = (1, 3)),
             TfidfTransformer(norm = 'l2', smooth_idf = True, use_idf = True),
             MultipleOutputClassifier(
-                SGDClassifier(loss='squared_hinge', alpha = 1e-5, max_iter=325, tol=None, penalty = 'l2'), 
+                SGDClassifier(loss='log', alpha = 1e-5, max_iter=325, tol=None, penalty = 'l2', n_jobs = 8), 
                 threshold
             )
         )
@@ -43,14 +43,14 @@ def run_ovr():
         CountVectorizer(binary=False, analyzer='word', stop_words='english', ngram_range = (1, 3)),
         TfidfTransformer(norm = 'l2', smooth_idf = True, use_idf = True),
         OneVsRestClassifier(
-            SGDClassifier(loss='squared_hinge', alpha = 1e-5, max_iter=325, tol=None, penalty = 'l2') 
+            SGDClassifier(loss='squared_hinge', alpha = 1e-5, max_iter=325, tol=None, penalty = 'l2'), n_jobs = 8
             )
     )
 
     print('Loading data ...')
 
     mlb = MultiLabelBinarizer()
-    X, y = dhlrs.load_data(threshold = 10)
+    X, y = dhlrs.load_data(threshold = 30)
     y = mlb.fit_transform(y)
     validate_model_multiclass(est, X, y, mlb.inverse_transform)
 
@@ -59,10 +59,10 @@ def run_ovr():
 
 def main():
     print('Running original approach on clean dataset')
-    # run_original()
+    run_original()
 
     print('Running hybrid solution')
-    # run_hybrid()
+    run_hybrid()
 
     print('Running OvR solution')
     run_ovr()

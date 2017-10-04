@@ -11,3 +11,4 @@ lib64
 pip-selfcheck.json
 *.sublime-*
 *-config.json
+*.pkl

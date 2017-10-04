@@ -25,7 +25,7 @@ class TrainingBundle():
         
     def pipeline(self, threshold = None):
         est = make_pipeline(
-            CountVectorizer(binary=False, analyzer='word', stop_words='english', max_features = 200000, min_df = 0.00001, ngram_range = (1, 3)),
+            CountVectorizer(binary=False, analyzer='word', stop_words='english', ngram_range = (1, 3)),
             TfidfTransformer(norm = 'l2', smooth_idf = True, use_idf = True),
             self.algorithm,
         )
@@ -50,6 +50,7 @@ class TrainingBundle():
         print('Best Parameters', search.best_params_)
 
         joblib.dump(search, self.name + self.ofile_extension, compress = 1)
+        joblib.dump(search, self.name + '-estimator' + self.ofile_extension, compress = 1)
         self.show_quality(search, y_tr, train_predictions, y_te, test_predictions)
 
     def show_quality(self, search, y_tr, train_predictions, y_te, test_predictions):
@@ -75,9 +76,7 @@ class MultiLabelTrainingBundle(TrainingBundle):
     def transform_labels(self, y):
         return self.mlb.fit_transform(y)
 
-    # TODO: Train on most popular labels
-    #       then compare output
-    #
+
     def train_model(self, X, y):
         y = self.mlb.fit_transform(y)
         return super(MultiLabelTrainingBundle, self).train_model(X, y)
